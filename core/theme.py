@@ -11,11 +11,11 @@ import streamlit as st
 
 # ---- palette -----------------------------------------------------------
 
-BG = "#0A1412"
-PANEL = "#101F1B"
-LINE = "#1E3A32"
-TEXT = "#E7F3EE"
-TEXT_DIM = "#7FA298"
+BG = "#132420"
+PANEL = "#1B322C"
+LINE = "#2E4F45"
+TEXT = "#F2F8F5"
+TEXT_DIM = "#9FC2B6"
 
 SEGMENT_TONES = {
     "Champions":   {"hex": "#3DDC97", "glow": "rgba(61,220,151,.55)", "css": "champions"},
@@ -70,6 +70,7 @@ section[data-testid="stSidebar"] * {{ color: var(--text) !important; }}
 
 h1, h2, h3 {{ font-family: 'IBM Plex Sans', sans-serif; font-weight: 600; letter-spacing: -.01em; }}
 p, li, label, .stMarkdown {{ color: var(--text); }}
+[data-testid="stCaptionContainer"], small {{ color: var(--text-dim) !important; }}
 
 hr {{ border-color: var(--line) !important; }}
 
@@ -257,44 +258,40 @@ def inject():
 def pulse_header(kicker: str, title: str):
     """Section header with a signature scrolling ECG line."""
     ecg_path = "M0,20 L28,20 L36,6 L44,34 L52,20 L120,20 L148,20 L156,6 L164,34 L172,20 L240,20 L268,20 L276,6 L284,34 L292,20 L360,20"
-    html = f"""
-    <div class="console-header">
-      <div>
-        <div class="console-kicker">{kicker}</div>
-        <div class="console-title">{title}</div>
-      </div>
-      <div class="ecg-wrap">
-        <svg viewBox="0 0 360 40" preserveAspectRatio="none">
-          <path class="ecg-base" d="{ecg_path}"/>
-          <path class="ecg-sweep" d="{ecg_path}"/>
-        </svg>
-      </div>
-    </div>
-    """
+    html = (
+        '<div class="console-header">'
+        f'<div><div class="console-kicker">{kicker}</div>'
+        f'<div class="console-title">{title}</div></div>'
+        '<div class="ecg-wrap"><svg viewBox="0 0 360 40" preserveAspectRatio="none">'
+        f'<path class="ecg-base" d="{ecg_path}"/>'
+        f'<path class="ecg-sweep" d="{ecg_path}"/>'
+        '</svg></div>'
+        '</div>'
+    )
     st.markdown(html, unsafe_allow_html=True)
 
 
 def vital_card(label: str, value, suffix: str = "", tone_hex: str = "#3DDC97", glow: str = "rgba(61,220,151,.55)") -> str:
-    return f"""
-    <div class="vital-card" style="border-left-color:{tone_hex}">
-      <div class="vital-label">{label}</div>
-      <div class="vital-value">{value}<span class="vital-suffix">{suffix}</span></div>
-      <div class="vital-dot" style="background:{tone_hex}; --glow:{glow}"></div>
-    </div>
-    """
+    return (
+        f'<div class="vital-card" style="border-left-color:{tone_hex}">'
+        f'<div class="vital-label">{label}</div>'
+        f'<div class="vital-value">{value}<span class="vital-suffix">{suffix}</span></div>'
+        f'<div class="vital-dot" style="background:{tone_hex}; --glow:{glow}"></div>'
+        '</div>'
+    )
 
 
 def vital_grid(cards: list[str]):
-    st.markdown(f'<div class="vital-grid">{"".join(cards)}</div>', unsafe_allow_html=True)
+    st.markdown('<div class="vital-grid">' + "".join(cards) + '</div>', unsafe_allow_html=True)
 
 
 def result_panel(text_html: str, tone_hex: str = "#3DDC97"):
-    html = f"""
-    <div class="result-panel" style="--tone-hex:{tone_hex}">
-      <div class="result-dot"></div>
-      <div class="result-text">{text_html}</div>
-    </div>
-    """
+    html = (
+        f'<div class="result-panel" style="--tone-hex:{tone_hex}">'
+        '<div class="result-dot"></div>'
+        f'<div class="result-text">{text_html}</div>'
+        '</div>'
+    )
     st.markdown(html, unsafe_allow_html=True)
 
 

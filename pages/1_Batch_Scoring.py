@@ -90,10 +90,12 @@ with tab_dashboard:
 
         if last_run_raw:
             last_run = json.loads(last_run_raw)
+            source_labels = {"upload": "Téléversement", "scheduled": "Planifié"}
+            source_val = last_run.get("source", "—")
             vital_grid([
                 vital_card("Clients scorés", last_run.get("n_clients", "—")),
                 vital_card("Exécuté (UTC)", str(last_run.get("run_at", "—"))[:19].replace("T", " ")),
-                vital_card("Origine", last_run.get("source", "—")),
+                vital_card("Origine", source_labels.get(source_val, source_val)),
             ])
 
             counts = last_run.get("segment_counts", {})
