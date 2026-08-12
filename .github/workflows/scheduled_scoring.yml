@@ -1,40 +1,31 @@
-name: Scoring RFM Planifié
+name: Scheduled RFM Scoring
 
 on:
   schedule:
-    - cron: '0 */6 * * *'
-  workflow_dispatch:
+    - cron: "0 */6 * * *"   # daily at 03:00 UTC — adjust as needed
+  workflow_dispatch: {}    # allows manual "Run workflow" trigger too
 
 jobs:
-  run-batch-scoring:
+  score:
     runs-on: ubuntu-latest
-    
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
-    - name: Install Python
-      uses: actions/setup-python@v5
-      with:
-        python-version: '3.11'
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
 
-    - name: Install dependencies
-      run: |
-        pip install -r requirements.txt
+      - name: Install dependencies
+        run: pip install -r requirements.txt
 
-    - name: Merge all CSVs from data/ folder
-      run: |
-        # Keep the header from the first file, append the rest
-        head -n 1 data/*.csv | head -n 1 > data/combined.csv
-        for file in data/*.csv; do
-          tail -n +2 "$file" >> data/combined.csv
-        done
-        echo "Total lines in combined file:"
-        wc -l data/combined.csv
+      - name: Combine transaction files
+        # Merges every raw-transaction CSV under data/ into one file.
+        # Point source_dir elsewhere if your real exports land somewhere
+        # else (e.g. a folder downloaded from S3/a DB in a prior step).
+        run: python combine_transactions.py data data/combined_transactions.csv
 
-    - name: Run scheduled scoring
-      env:
-        UPSTASH_REDIS_REST_URL: ${{ secrets.UPSTASH_REDIS_REST_URL }}
-        UPSTASH_REDIS_REST_TOKEN: ${{ secrets.UPSTASH_REDIS_REST_TOKEN }}
-      run: |
-        python scheduler.py data/combined.csv
+      - name: Run batch scoring
+        run: python scheduler.py data/combined_transactions.csv
+        env:
+          UPSTASH_REDIS_REST_URL: ${{ secrets.UPSTASH_REDIS_REST_URL }}
+          UPSTASH_REDIS_REST_TOKEN: ${{ secrets.UPSTASH_REDIS_REST_TOKEN }}
