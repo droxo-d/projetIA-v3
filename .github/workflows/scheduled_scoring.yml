@@ -1,0 +1,27 @@
+name: Scheduled RFM Scoring
+
+on:
+  schedule:
+    - cron: "0 3 * * *"   # daily at 03:00 UTC — adjust as needed
+  workflow_dispatch: {}    # allows manual "Run workflow" trigger too
+
+jobs:
+  score:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Run batch scoring
+        # Adjust the CSV path/source to wherever your latest transactions
+        # export lives (repo file, downloaded from S3/DB beforehand, etc.)
+        run: python scheduler.py data/transactions.csv
+        env:
+          UPSTASH_REDIS_REST_URL: ${{ secrets.UPSTASH_REDIS_REST_URL }}
+          UPSTASH_REDIS_REST_TOKEN: ${{ secrets.UPSTASH_REDIS_REST_TOKEN }}
