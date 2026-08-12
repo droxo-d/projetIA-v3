@@ -56,6 +56,7 @@ rfm-app/
 │   ├── sample_transactions.csv      # Jeu de données d'exemple (brut)
 │   └── sample_rfm_table.csv         # Même jeu, déjà agrégé en RFM
 ├── scheduler.py                     # Script de scoring planifié (hors app)
+├── combine_transactions.py          # Fusionne plusieurs CSV de transactions en un seul
 ├── export_pipeline_snippet.py       # Code à coller dans le notebook
 ├── .github/workflows/
 │   └── scheduled_scoring.yml        # Cron GitHub Actions prêt à l'emploi
@@ -276,24 +277,39 @@ Ce script écrase `batch:last_run` et chaque `client:{id}` dans Redis —
 l'onglet **Dernier run planifié** de la page 2 affichera toujours l'état
 le plus récent.
 
+Si vos transactions arrivent réparties dans plusieurs fichiers (un export
+par jour, par magasin, etc.), fusionnez-les d'abord avec
+`combine_transactions.py` avant de lancer `scheduler.py` :
+
+```bash
+python combine_transactions.py data data/combined_transactions.csv
+python scheduler.py data/combined_transactions.csv
+```
+
+Il ne combine que les CSV qui ont le schéma de transactions brutes
+(`Customer ID`, `Invoice`, `InvoiceDate`, `Quantity`, `Price`) — un
+fichier comme `sample_rfm_table.csv`, déjà agrégé, est ignoré
+automatiquement.
+
 Trois façons de l'automatiser :
 
 - **Cron (Linux/Mac)** : `crontab -e`, puis par exemple pour un run
   quotidien à 3h :
   ```
-  0 3 * * * cd /chemin/vers/rfm-app && /usr/bin/python3 scheduler.py data/transactions.csv
+  0 3 * * * cd /chemin/vers/rfm-app && /usr/bin/python3 combine_transactions.py data data/combined_transactions.csv && /usr/bin/python3 scheduler.py data/combined_transactions.csv
   ```
 - **Task Scheduler (Windows)** : créez une tâche qui exécute
-  `python scheduler.py data\transactions.csv` avec le dossier du projet
-  comme répertoire de démarrage.
+  `python combine_transactions.py data data\combined_transactions.csv && python scheduler.py data\combined_transactions.csv`
+  avec le dossier du projet comme répertoire de démarrage.
 - **GitHub Actions** (déjà configuré) : `.github/workflows/scheduled_scoring.yml`
-  tourne chaque jour à 3h UTC. Il faut :
+  tourne chaque jour à 3h UTC, avec un step `combine_transactions.py`
+  avant le scoring. Il faut :
   1. Pousser le projet sur un dépôt GitHub.
   2. Dans *Settings → Secrets and variables → Actions*, ajouter
      `UPSTASH_REDIS_REST_URL` et `UPSTASH_REDIS_REST_TOKEN`.
-  3. Adapter la ligne `python scheduler.py data/transactions.csv` du
-     workflow vers l'emplacement réel de vos données (fichier du repo,
-     ou téléchargé depuis S3/une base avant ce step).
+  3. Adapter `source_dir` dans le step "Combine transaction files" vers
+     l'emplacement réel de vos données (dossier du repo, ou téléchargé
+     depuis S3/une base avant ce step).
 
 ---
 
