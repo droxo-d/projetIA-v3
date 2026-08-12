@@ -158,6 +158,7 @@ with tab_analysis:
                     color=order, color_discrete_map=SEGMENT_COLOR_MAP, hole=0.55,
                 )
                 fig.update_traces(textfont=dict(family="IBM Plex Mono, monospace"))
+                fig.update_layout(legend_title_text="Segment")
                 st.plotly_chart(plotly_layout(fig), use_container_width=True)
 
             st.markdown("**Distribution par segment**")

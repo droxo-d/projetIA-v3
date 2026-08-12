@@ -308,7 +308,11 @@ def plotly_layout(fig, height: int = 380):
         plot_bgcolor=PANEL,
         font=dict(family="IBM Plex Mono, monospace", color=TEXT, size=12),
         margin=dict(l=10, r=10, t=30, b=10),
-        legend=dict(bgcolor="rgba(0,0,0,0)"),
+        legend=dict(
+            bgcolor="rgba(0,0,0,0)",
+            font=dict(family="IBM Plex Mono, monospace", color=TEXT, size=12),
+            title=dict(font=dict(color=TEXT_DIM)),
+        ),
     )
     fig.update_xaxes(gridcolor=LINE, zerolinecolor=LINE, linecolor=LINE)
     fig.update_yaxes(gridcolor=LINE, zerolinecolor=LINE, linecolor=LINE)
