@@ -1,27 +1,40 @@
-name: Scheduled RFM Scoring
+name: Scoring RFM Planifié
 
 on:
   schedule:
-    - cron: "0 */6 * * *"   # daily at 03:00 UTC — adjust as needed
-  workflow_dispatch: {}    # allows manual "Run workflow" trigger too
+    - cron: '0 */6 * * *'
+  workflow_dispatch:
 
 jobs:
-  score:
+  run-batch-scoring:
     runs-on: ubuntu-latest
+    
     steps:
-      - uses: actions/checkout@v4
+    - name: Checkout code
+      uses: actions/checkout@v4
 
-      - uses: actions/setup-python@v5
-        with:
-          python-version: "3.11"
+    - name: Install Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.11'
 
-      - name: Install dependencies
-        run: pip install -r requirements.txt
+    - name: Install dependencies
+      run: |
+        pip install -r requirements.txt
 
-      - name: Run batch scoring
-        # Adjust the CSV path/source to wherever your latest transactions
-        # export lives (repo file, downloaded from S3/DB beforehand, etc.)
-        run: python scheduler.py data/transactions.csv
-        env:
-          UPSTASH_REDIS_REST_URL: ${{ secrets.UPSTASH_REDIS_REST_URL }}
-          UPSTASH_REDIS_REST_TOKEN: ${{ secrets.UPSTASH_REDIS_REST_TOKEN }}
+    - name: Merge all CSVs from data/ folder
+      run: |
+        # Keep the header from the first file, append the rest
+        head -n 1 data/*.csv | head -n 1 > data/combined.csv
+        for file in data/*.csv; do
+          tail -n +2 "$file" >> data/combined.csv
+        done
+        echo "Total lines in combined file:"
+        wc -l data/combined.csv
+
+    - name: Run scheduled scoring
+      env:
+        UPSTASH_REDIS_REST_URL: ${{ secrets.UPSTASH_REDIS_REST_URL }}
+        UPSTASH_REDIS_REST_TOKEN: ${{ secrets.UPSTASH_REDIS_REST_TOKEN }}
+      run: |
+        python scheduler.py data/combined.csv
