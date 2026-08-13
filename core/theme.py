@@ -70,6 +70,8 @@ section[data-testid="stSidebar"] * {{ color: var(--text) !important; }}
 
 h1, h2, h3 {{ font-family: 'IBM Plex Sans', sans-serif; font-weight: 600; letter-spacing: -.01em; }}
 p, li, label, .stMarkdown {{ color: var(--text); }}
+/* safety net: nothing should ever fall back to an unreadable default */
+.stApp * {{ color: var(--text); }}
 [data-testid="stCaptionContainer"], small {{ color: var(--text-dim) !important; }}
 
 hr {{ border-color: var(--line) !important; }}
@@ -130,6 +132,35 @@ label p {{ font-size: .8rem !important; letter-spacing: .02em; color: var(--text
   background: var(--panel) !important;
   border: 1px dashed var(--line) !important;
   border-radius: 3px !important;
+}}
+[data-testid="stFileUploaderDropzone"] section {{ color: var(--text-dim) !important; }}
+[data-testid="stFileUploaderDropzone"] section small {{ color: var(--text-dim) !important; }}
+
+/* All Streamlit buttons, targeted via the stable `kind` attribute
+   (covers the file-uploader's Browse button, whose wrapper markup
+   changes across Streamlit versions more often than this attribute does) */
+button[kind="secondary"], button[kind="secondaryFormSubmit"],
+button[kind="primary"], button[kind="primaryFormSubmit"] {{
+  background: #3DDC97 !important;
+  color: #06120D !important;
+  border: none !important;
+  border-radius: 2px !important;
+  font-family: 'IBM Plex Mono', monospace !important;
+  letter-spacing: .06em;
+  text-transform: uppercase;
+  font-size: .72rem !important;
+  font-weight: 600 !important;
+  padding: .45rem 1rem !important;
+  transition: transform .12s ease, box-shadow .12s ease;
+}}
+button[kind="secondary"] *, button[kind="secondaryFormSubmit"] *,
+button[kind="primary"] *, button[kind="primaryFormSubmit"] * {{
+  color: #06120D !important;
+}}
+button[kind="secondary"]:hover, button[kind="secondaryFormSubmit"]:hover,
+button[kind="primary"]:hover, button[kind="primaryFormSubmit"]:hover {{
+  transform: translateY(-1px);
+  box-shadow: 0 8px 22px -10px rgba(61,220,151,.7);
 }}
 
 /* dataframe */
